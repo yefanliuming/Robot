@@ -7,6 +7,7 @@ import map from "../components/map.vue"
 import TestImage from '@/components/TestImage.vue'
 import About from "@/components/About.vue";
 import newHello from "@/components/newHello.vue";
+import login from "@/components/login.vue";
 
 const routes = [
   {
@@ -48,7 +49,12 @@ const routes = [
     path: '/newhello',
     name: "newHello",
     component: newHello
-  }
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: login
+  },
 ]
 
 const router = createRouter({

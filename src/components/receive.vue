@@ -1,5 +1,9 @@
 <template>
   <div class="main-content">
+
+    <!-- 电池电量区域 -->
+    <Battery />
+
     <!-- 可见光视频区域 -->
     <div class="video-panel">
       <h3>可见光视频</h3>
@@ -61,9 +65,15 @@
           </div>
           <!-- 左右按钮 -->
           <div class="button-row middle-row">
-            <button @click="moveRobot('left')" class="direction-btn">←</button>
+<!--            <button @click="moveRobot('left')" class="direction-btn">←</button>-->
+            <button @click="moveRobot('left')" class="direction-btn">
+              <img src="@/assets/left.svg" alt="Left" style="width: 20px; height: 20px;">
+            </button>
             <button @click="moveRobot('stop')" class="direction-btn">停止</button>
-            <button @click="moveRobot('right')" class="direction-btn">→</button>
+<!--            <button @click="moveRobot('right')" class="direction-btn">→</button>-->
+            <button @click="moveRobot('right')" class="direction-btn">
+              <img src="@/assets/right.svg" alt="Right" style="width: 20px; height: 20px;">
+            </button>
           </div>
           <!-- 下按钮 -->
           <div class="button-row bottom-row">
@@ -92,10 +102,12 @@
 import webSocketService from '@/services/websocket.service';
 import Map from '@/components/map.vue';
 import apiConfig from "@/config/api.config";
+import Battery from "@/components/battery.vue";
 
 export default {
   components: {
-    Map
+    Map,
+    Battery
   },
   // name: 'VideoStreams',
   // computed: {
@@ -105,6 +117,7 @@ export default {
   // },
   data() {
     return {
+
       rgbVideoSrc: apiConfig.getrgbVideoSrc(),
       irVideoSrc: apiConfig.getirVideoSrc(),
       baseUrl: apiConfig.getRobotUrl(),
@@ -118,7 +131,12 @@ export default {
       retryInterval: 3000, // 2 seconds
     }
   },
+
+  computed: {
+
+  },
   mounted() {
+
     // Check for message when component mounts
     const message = localStorage.getItem('robotMessage');
     if (message) {
@@ -152,6 +170,7 @@ export default {
     }
   },
   methods: {
+
     async startRgbStream() {
       this.showToast('视觉模块启动中...', 11000);
       this.rgbRetryCount = 0; // Reset retry counter
@@ -717,4 +736,5 @@ export default {
     min-height: 48px;
   }
 }
+
 </style>

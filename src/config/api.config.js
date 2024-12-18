@@ -33,4 +33,7 @@ export default {
   getreceiveMoveUrl() {
     return `${API_BASE_URL}/api/move`;
   },
+  getreceiveBatteryUrl() {
+    return `${API_BASE_URL}/api/get_battery`;
+  },
 };
