@@ -8,8 +8,8 @@
     <div class="video-panel">
       <h3>可见光视频</h3>
       <div class="button-container">
-<!--        <button @click="startRgbStream">Start Rgb Stream</button>-->
-<!--        <button @click="killRgbProcess">Kill Rgb Process</button>-->
+        <button @click="startRgbStream">开启</button>
+        <button @click="killRgbProcess">关闭</button>
       </div>
       <div class="video-container">
         <img 
@@ -25,10 +25,10 @@
 
     <!-- 热红外视频区域 -->
     <div class="video-panel">
-      <h3>热红外视频</h3>
+      <h3>红外热成像</h3>
       <div class="button-container">
-<!--        <button @click="startIrStream">Start IR Stream</button>-->
-<!--        <button @click="killIrProcess">Kill IR Process</button>-->
+        <button @click="startIrStream">开启</button>
+        <button @click="killIrProcess">关闭</button>
       </div>
       <div class="video-container">
         <img 
@@ -109,17 +109,13 @@ export default {
     Map,
     Battery
   },
-  // name: 'VideoStreams',
-  // computed: {
-  //   http() {
-  //     return http
-  //   }
-  // },
   data() {
     return {
 
-      rgbVideoSrc: apiConfig.getrgbVideoSrc(),
-      irVideoSrc: apiConfig.getirVideoSrc(),
+      // rgbVideoSrc: apiConfig.getrgbVideoSrc(),
+      // irVideoSrc: apiConfig.getirVideoSrc(),
+      rgbVideoSrc: require("@/assets/no.png"),
+      irVideoSrc: require("@/assets/no.png"),
       baseUrl: apiConfig.getRobotUrl(),
       showPopup: false,
       popupMessage: '',
@@ -172,76 +168,92 @@ export default {
   methods: {
 
     async startRgbStream() {
-      this.showToast('视觉模块启动中...', 11000);
-      this.rgbRetryCount = 0; // Reset retry counter
-      try {
-        await fetch('/start_rgb');
-        setTimeout(() => {
-          this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
-        }, 11000);
-      } catch (error) {
-        console.error('Error starting RGB stream:', error);
-      }
+      // this.showToast('视觉模块启动中...', 11000);
+      // this.rgbRetryCount = 0; // Reset retry counter
+      // try {
+      //   await fetch('/start_rgb');
+      //   setTimeout(() => {
+      //     this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
+      //   }, 11000);
+      // } catch (error) {
+      //   console.error('Error starting RGB stream:', error);
+      // }
+      this.rgbStreamActive = true;
+      this.rgbAutoReload = true;
+      this.rgbVideoSrc = apiConfig.getrgbVideoSrc()
+      console.log('RGB video source updated to:', apiConfig.getrgbVideoSrc());
     },
 
     async startIrStream() {
-      this.showToast('红外模块启动中...', 5000);
-      try {
-        const response = await fetch('/start_ir');
-        if (response.ok) {
-          console.log('IR stream started successfully');
-          setTimeout(() => {
-            this.irVideoSrc = `${this.baseUrl}:5001/video_feed_ir`;
-            console.log('IR video source updated to:', this.irVideoSrc);
-            
-            // Add error handling for the IR video stream
-            const irImg = this.$refs.irFrame;
-            irImg.onerror = () => {
-              console.error('Failed to load IR stream');
-              this.irVideoSrc = '../static/img/vision_close.png';
-              alert('无法加载红外视频流');
-            };
-            
-            irImg.onload = () => {
-              console.log('IR stream loaded successfully');
-            };
-          }, 5000);
-        } else {
-          throw new Error('Failed to start IR stream');
-        }
-      } catch (error) {
-        console.error('Error starting IR stream:', error);
-        this.irVideoSrc = '../static/img/vision_close.png';
-        alert('启动红外视频流失败');
-      }
+      // this.showToast('红外模块启动中...', 5000);
+      // try {
+      //   const response = await fetch('/start_ir');
+      //   if (response.ok) {
+      //     console.log('IR stream started successfully');
+      //     setTimeout(() => {
+      //       this.irVideoSrc = `${this.baseUrl}:5001/video_feed_ir`;
+      //       console.log('IR video source updated to:', this.irVideoSrc);
+      //
+      //       // Add error handling for the IR video stream
+      //       const irImg = this.$refs.irFrame;
+      //       irImg.onerror = () => {
+      //         console.error('Failed to load IR stream');
+      //         this.irVideoSrc = '../static/img/vision_close.png';
+      //         alert('无法加载红外视频流');
+      //       };
+      //
+      //       irImg.onload = () => {
+      //         console.log('IR stream loaded successfully');
+      //       };
+      //     }, 5000);
+      //   } else {
+      //     throw new Error('Failed to start IR stream');
+      //   }
+      // } catch (error) {
+      //   console.error('Error starting IR stream:', error);
+      //   this.irVideoSrc = '../static/img/vision_close.png';
+      //   alert('启动红外视频流失败');
+      // }
+      this.irStreamActive = true;
+      this.irAutoReload = true;
+      this.irVideoSrc = apiConfig.getirVideoSrc();
+      console.log('IR video source updated to:', apiConfig.getirVideoSrc());
     },
 
     async killRgbProcess() {
-      try {
-        const response = await fetch('/kill_camera_process', {method: 'POST'});
-        if (response.ok) {
-          alert("视觉模块已停止！");
-          this.rgbVideoSrc = "../static/img/vision_close.png";
-        }
-      } catch (error) {
-        alert("Error: " + error);
-      }
+      // try {
+      //   const response = await fetch('/kill_camera_process', {method: 'POST'});
+      //   if (response.ok) {
+      //     alert("视觉模块已停止！");
+      //     this.rgbVideoSrc = "../static/img/vision_close.png";
+      //   }
+      // } catch (error) {
+      //   alert("Error: " + error);
+      // }
+      this.rgbStreamActive = false;
+      this.rgbAutoReload = false;
+      this.rgbVideoSrc = require("@/assets/no.png");
+      console.log('kill rgb');
     },
 
     async killIrProcess() {
-      try {
-        const response = await fetch('/kill_ir_process', {method: 'POST'});
-        if (response.ok) {
-          console.log('IR process killed successfully');
-          alert("红外模块已停止！");
-          this.irVideoSrc = "../static/img/vision_close.png";
-        } else {
-          throw new Error('Failed to kill IR process');
-        }
-      } catch (error) {
-        console.error('Error killing IR process:', error);
-        alert("Error: " + error);
-      }
+      // try {
+      //   const response = await fetch('/kill_ir_process', {method: 'POST'});
+      //   if (response.ok) {
+      //     console.log('IR process killed successfully');
+      //     alert("红外模块已停止！");
+      //     this.irVideoSrc = "../static/img/vision_close.png";
+      //   } else {
+      //     throw new Error('Failed to kill IR process');
+      //   }
+      // } catch (error) {
+      //   console.error('Error killing IR process:', error);
+      //   alert("Error: " + error);
+      // }
+      this.irStreamActive = false;
+      this.irAutoReload = false;
+      this.irVideoSrc = require("@/assets/no.png");
+      console.log('kill ir');
     },
 
     showToast(message, duration) {

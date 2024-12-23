@@ -8,8 +8,8 @@
     <div class="video-panel">
       <h3>可见光视频</h3>
       <div class="button-container">
-        <!--        <button @click="startRgbStream">Start Rgb Stream</button>-->
-        <!--        <button @click="killRgbProcess">Kill Rgb Process</button>-->
+                <button @click="startRgbStream">Start Rgb Stream</button>
+                <button @click="killRgbProcess">Kill Rgb Process</button>
       </div>
       <div class="video-container">
         <img
@@ -20,6 +20,10 @@
             @load="handleImageLoad('rgb')"
             style="width: 100%; height: 100%; object-fit: contain;"
         >
+
+<!--        <div v-else class="no-video-message">-->
+<!--          未启动视觉模块-->
+<!--        </div>-->
       </div>
     </div>
 
@@ -27,8 +31,8 @@
     <div class="video-panel">
       <h3>热红外视频</h3>
       <div class="button-container">
-        <!--        <button @click="startIrStream">Start IR Stream</button>-->
-        <!--        <button @click="killIrProcess">Kill IR Process</button>-->
+                <button @click="startIrStream">Start IR Stream</button>
+                <button @click="killIrProcess">Kill IR Process</button>
       </div>
       <div class="video-container">
         <img
@@ -39,6 +43,10 @@
             @load="handleImageLoad('ir')"
             style="width: 100%; height: 100%; object-fit: contain;"
         >
+
+<!--        <div v-else class="no-video-message">-->
+<!--          未启动红外模块-->
+<!--        </div>-->
       </div>
     </div>
 
@@ -65,12 +73,12 @@
           </div>
           <!-- 左右按钮 -->
           <div class="button-row middle-row">
-<!--            <button @click="moveRobot('left')" class="direction-btn">←</button>-->
+            <!--            <button @click="moveRobot('left')" class="direction-btn">←</button>-->
             <button @click="moveRobot('left')" class="direction-btn">
               <img src="@/assets/left.svg" alt="Left" style="width: 20px; height: 20px;">
             </button>
             <button @click="moveRobot('stop')" class="direction-btn">停止</button>
-<!--            <button @click="moveRobot('right')" class="direction-btn">→</button>-->
+            <!--            <button @click="moveRobot('right')" class="direction-btn">→</button>-->
             <button @click="moveRobot('right')" class="direction-btn">
               <img src="@/assets/right.svg" alt="Right" style="width: 20px; height: 20px;">
             </button>
@@ -98,29 +106,26 @@
 </template>
 
 <script>
-// import * as http from "node:http";
+
 import webSocketService from '@/services/websocket.service';
 import Map from '@/components/map.vue';
 import apiConfig from "@/config/api.config";
 import Battery from "@/components/battery.vue";
 
-
 export default {
+
+
   components: {
     Map,
     Battery
   },
-  // name: 'VideoStreams',
-  // computed: {
-  //   http() {
-  //     return http
-  //   }
-  // },
   data() {
     return {
 
-      rgbVideoSrc: apiConfig.getrgbVideoSrc(),
-      irVideoSrc: apiConfig.getirVideoSrc(),
+      rgbStreamActive: false,
+      irStreamActive: false,
+      rgbVideoSrc: require("@/assets/no.png"),
+      irVideoSrc: require("@/assets/no.png"),
       baseUrl: apiConfig.getRobotUrl(),
       showPopup: false,
       popupMessage: '',
@@ -129,17 +134,16 @@ export default {
       rgbRetryCount: 0,
       irRetryCount: 0,
       maxRetries: 5,
-      retryInterval: 3000, // 2 seconds
+      retryInterval: 3000, // 3 seconds between retries
+      rgbAutoReload: false,
+      irAutoReload: false
     }
   },
 
   computed: {
 
   },
-
   mounted() {
-
-
 
     // Check for message when component mounts
     const message = localStorage.getItem('robotMessage');
@@ -160,7 +164,7 @@ export default {
     // 添加消息处理器
     this.messageHandler = (message) => {
       console.log('Component received message:', message);
-      // 确保消息包含必要的字段
+      // 确保消息包含必要字段
       if (message && message.message) {
         this.showPopupDialog(message);
       }
@@ -175,79 +179,32 @@ export default {
   },
   methods: {
 
-
-
     async startRgbStream() {
-      this.showToast('视觉模块启动中...', 11000);
-      this.rgbRetryCount = 0; // Reset retry counter
-      try {
-        await fetch('/start_rgb');
-        setTimeout(() => {
-          this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
-        }, 11000);
-      } catch (error) {
-        console.error('Error starting RGB stream:', error);
-      }
+      this.rgbStreamActive = true;
+      this.rgbAutoReload = true;
+      this.rgbVideoSrc = apiConfig.getrgbVideoSrc()
+      console.log('RGB video source updated to:', apiConfig.getrgbVideoSrc());
     },
 
     async startIrStream() {
-      this.showToast('红外模块启动中...', 5000);
-      try {
-        const response = await fetch('/start_ir');
-        if (response.ok) {
-          console.log('IR stream started successfully');
-          setTimeout(() => {
-            this.irVideoSrc = `${this.baseUrl}:5001/video_feed_ir`;
-            console.log('IR video source updated to:', this.irVideoSrc);
-
-            // Add error handling for the IR video stream
-            const irImg = this.$refs.irFrame;
-            irImg.onerror = () => {
-              console.error('Failed to load IR stream');
-              this.irVideoSrc = '../static/img/vision_close.png';
-              alert('无法加载红外视频流');
-            };
-
-            irImg.onload = () => {
-              console.log('IR stream loaded successfully');
-            };
-          }, 5000);
-        } else {
-          throw new Error('Failed to start IR stream');
-        }
-      } catch (error) {
-        console.error('Error starting IR stream:', error);
-        this.irVideoSrc = '../static/img/vision_close.png';
-        alert('启动红外视频流失败');
-      }
+      this.irStreamActive = true;
+      this.irAutoReload = true;
+      this.irVideoSrc = apiConfig.getirVideoSrc();
+      console.log('IR video source updated to:', apiConfig.getirVideoSrc());
     },
 
     async killRgbProcess() {
-      try {
-        const response = await fetch('/kill_camera_process', {method: 'POST'});
-        if (response.ok) {
-          alert("视觉模块已停止！");
-          this.rgbVideoSrc = "../static/img/vision_close.png";
-        }
-      } catch (error) {
-        alert("Error: " + error);
-      }
+      this.rgbStreamActive = false;
+      this.rgbAutoReload = false;
+      this.rgbVideoSrc = require("@/assets/no.png");
+      console.log('kill rgb');
     },
 
     async killIrProcess() {
-      try {
-        const response = await fetch('/kill_ir_process', {method: 'POST'});
-        if (response.ok) {
-          console.log('IR process killed successfully');
-          alert("红外模块已停止！");
-          this.irVideoSrc = "../static/img/vision_close.png";
-        } else {
-          throw new Error('Failed to kill IR process');
-        }
-      } catch (error) {
-        console.error('Error killing IR process:', error);
-        alert("Error: " + error);
-      }
+      this.irStreamActive = false;
+      this.irAutoReload = false;
+      this.irVideoSrc = require("@/assets/no.png");
+      console.log('kill ir');
     },
 
     showToast(message, duration) {
@@ -326,40 +283,51 @@ export default {
     handleImageError(type) {
       console.error(`Failed to load ${type} stream`);
       if (type === 'rgb') {
-        if (this.rgbRetryCount < this.maxRetries) {
-          this.rgbRetryCount++;
-          console.log(`Retrying RGB stream (attempt ${this.rgbRetryCount})`);
-          setTimeout(() => {
-            // Force reload by adding timestamp
+        console.error('RGB stream error:', this.rgbVideoSrc);
+        if (this.rgbAutoReload) {
+          if (this.rgbRetryCount < this.maxRetries) {
+            this.rgbRetryCount++;
+            console.log(`Retrying RGB stream (attempt ${this.rgbRetryCount})`);
+            setTimeout(() => {
+              if (this.rgbAutoReload) {
+                // Add timestamp to prevent caching
+                this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
+              }
+            }, this.retryInterval);
+          } else {
+            // Continue retrying even after max attempts, but reset counter
             this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
-          }, this.retryInterval);
-        } else {
-          // this.rgbVideoSrc = '../static/img/vision_close.png';
-          this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
-          console.log('Max retry attempts reached for RGB stream');
+            this.rgbRetryCount = 0;
+            console.log('Max retry attempts reached, continuing to retry');
+          }
         }
       }
       if (type === 'ir') {
-        if (this.irRetryCount < this.maxRetries) {
-          this.irRetryCount++;
-          console.log(`Retrying IR stream (attempt ${this.irRetryCount})`);
-          setTimeout(() => {
-            // Force reload by adding timestamp
+        console.error('IR stream error:', this.irVideoSrc);
+        if (this.irAutoReload) {
+          if (this.irRetryCount < this.maxRetries) {
+            this.irRetryCount++;
+            console.log(`Retrying IR stream (attempt ${this.irRetryCount})`);
+            setTimeout(() => {
+              // Force reload by adding timestamp
+              this.irVideoSrc = `${this.baseUrl}:5001/video_feed_ir?t=${Date.now()}`;
+            }, this.retryInterval);
+          } else {
+            // Continue retrying even after max attempts
             this.irVideoSrc = `${this.baseUrl}:5001/video_feed_ir?t=${Date.now()}`;
-          }, this.retryInterval);
-        } else {
-          // this.irVideoSrc = '../static/img/vision_close.png';
-          this.irVideoSrc = `${this.baseUrl}:5001/video_feed_ir?t=${Date.now()}`;
-          console.log('Max retry attempts reached for IR stream');
+            console.log('Max retry attempts reached for IR stream');
+          }
         }
       }
     },
 
     handleImageLoad(type) {
       if (type === 'rgb') {
-        this.rgbRetryCount = 0; // Reset retry counter on successful load
         console.log('RGB stream loaded successfully');
-      }else {
+        console.log('Current RGB URL:', this.rgbVideoSrc);
+        console.log('Stream active status:', this.rgbStreamActive);
+        this.rgbRetryCount = 0;
+      } else {
         this.irRetryCount = 0; // Reset retry counter on successful load
         console.log('IR stream loaded successfully');
       }
@@ -742,6 +710,15 @@ export default {
     min-height: 48px;
   }
 }
-
-
+/* Add new styles */
+.no-video-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f5f5f5;
+  color: #666;
+  font-size: 16px;
+}
 </style>
