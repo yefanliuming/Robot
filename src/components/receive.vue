@@ -12,13 +12,13 @@
         <button @click="killRgbProcess">关闭</button>
       </div>
       <div class="video-container">
-        <img 
-          :src="rgbVideoSrc" 
-          ref="rgbFrame" 
-          alt="RGB Video Stream"
-          @error="handleImageError('rgb')"
-          @load="handleImageLoad('rgb')"
-          style="width: 100%; height: 100%; object-fit: contain;"
+        <img
+            :src="rgbVideoSrc"
+            ref="rgbFrame"
+            alt="RGB Video Stream"
+            @error="handleImageError('rgb')"
+            @load="handleImageLoad('rgb')"
+            style="width: 100%; height: 100%; object-fit: contain;"
         >
       </div>
     </div>
@@ -31,13 +31,13 @@
         <button @click="killIrProcess">关闭</button>
       </div>
       <div class="video-container">
-        <img 
-          :src="irVideoSrc" 
-          ref="irFrame" 
-          alt="IR Video Stream"
-          @error="handleImageError('ir')"
-          @load="handleImageLoad('ir')"
-          style="width: 100%; height: 100%; object-fit: contain;"
+        <img
+            :src="irVideoSrc"
+            ref="irFrame"
+            alt="IR Video Stream"
+            @error="handleImageError('ir')"
+            @load="handleImageLoad('ir')"
+            style="width: 100%; height: 100%; object-fit: contain;"
         >
       </div>
     </div>
@@ -51,12 +51,23 @@
     <!-- 实时控制区域 -->
     <div class="control-panel">
       <h3>实时控制</h3>
+
+      <!-- Add speed control dropdown -->
+      <div class="speed-control">
+        <label for="speed-select">速度档位：</label>
+        <select id="speed-select" v-model="moveSpeed" class="speed-select">
+          <option value="1">1档</option>
+          <option value="2">2档</option>
+          <option value="3">3档</option>
+        </select>
+      </div>
+
       <div class="control-buttons">
         <!-- 系统启动按钮，独立放置在顶部 -->
-<!--        <div class="system-btn-container">-->
-<!--          <button @click="startSystem" class="system-btn">启动系统</button>-->
-<!--        </div>-->
-        
+        <!--        <div class="system-btn-container">-->
+        <!--          <button @click="startSystem" class="system-btn">启动系统</button>-->
+        <!--        </div>-->
+
         <!-- 方向控制按钮组 -->
         <div class="direction-buttons">
           <!-- 上按钮 -->
@@ -65,12 +76,12 @@
           </div>
           <!-- 左右按钮 -->
           <div class="button-row middle-row">
-<!--            <button @click="moveRobot('left')" class="direction-btn">←</button>-->
+            <!--            <button @click="moveRobot('left')" class="direction-btn">←</button>-->
             <button @click="moveRobot('left')" class="direction-btn">
               <img src="@/assets/left.svg" alt="Left" style="width: 20px; height: 20px;">
             </button>
             <button @click="moveRobot('stop')" class="direction-btn">停止</button>
-<!--            <button @click="moveRobot('right')" class="direction-btn">→</button>-->
+            <!--            <button @click="moveRobot('right')" class="direction-btn">→</button>-->
             <button @click="moveRobot('right')" class="direction-btn">
               <img src="@/assets/right.svg" alt="Right" style="width: 20px; height: 20px;">
             </button>
@@ -125,6 +136,7 @@ export default {
       irRetryCount: 0,
       maxRetries: 5,
       retryInterval: 3000, // 2 seconds
+      moveSpeed: "2", // Default speed setting
     }
   },
 
@@ -273,9 +285,10 @@ export default {
     async moveRobot(direction) {
       try {
         const formData = {
-          direction: direction
+          direction: direction,
+          speed: parseInt(this.moveSpeed) // Add speed to the request
         };
-        
+
         const response = await fetch(apiConfig.getreceiveMoveUrl(), {
           method: 'POST',
           credentials: 'include',
@@ -372,13 +385,13 @@ export default {
     },
 
     showPopupDialog(messageData) {
-        this.$nextTick(() => {
-          this.popupMessage = messageData.message;
-          this.currentMessageId = messageData.id;
-          this.currentMessage = messageData;
-          this.showPopup = true;
-          console.log('Popup shown:', this.showPopup, 'Message:', this.popupMessage);
-        });
+      this.$nextTick(() => {
+        this.popupMessage = messageData.message;
+        this.currentMessageId = messageData.id;
+        this.currentMessage = messageData;
+        this.showPopup = true;
+        console.log('Popup shown:', this.showPopup, 'Message:', this.popupMessage);
+      });
     },
 
     handleConfirm() {
@@ -747,6 +760,32 @@ export default {
     margin: 5px;
     min-height: 48px;
   }
+}
+
+.speed-control {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.speed-select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #bdc3c7;
+  background-color: white;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 80px;
+}
+
+.speed-select:hover {
+  border-color: #95a5a6;
+}
+
+.speed-select:focus {
+  outline: none;
+  border-color: #3498db;
 }
 
 </style>
