@@ -2,7 +2,7 @@
   <div class="main-content">
 
     <!-- 电池电量区域 -->
-    <Battery />
+    <Battery :robotId="robotId" />
 
     <!-- 可见光视频区域 -->
     <div class="video-panel">
@@ -24,7 +24,7 @@
     </div>
 
     <!-- 热红外视频区域 -->
-    <div class="video-panel">
+    <div class="video-panel" v-if="showIrPanel">
       <h3>红外热成像</h3>
       <div class="button-container">
         <button @click="startIrStream">开启</button>
@@ -45,7 +45,7 @@
     <!-- 地图区域 -->
     <div class="map-panel">
       <h3>地图</h3>
-      <Map />
+      <Map :robotId="robotId" />
     </div>
 
     <!-- 实时控制区域 -->
@@ -138,15 +138,31 @@ export default {
       retryInterval: 3000, // 2 seconds
       moveSpeed: "2", // Default speed setting
 
+      showIrPanel: false,
+      showIrVideo: false,
+
+      robotId: this.$route.query.robotId,
     }
   },
 
-
+  created() {
+    // 在组件创建时检查路由参数
+    
+    this.showIrPanel = this.robotId === 'R001';
+    
+  },
 
   computed: {
 
   },
   mounted() {
+
+    // 确保在元素挂载后再进行操作
+    this.$nextTick(() => {
+      if (this.$refs.irFrame) {
+        this.setupVideoStream();
+      }
+    });
 
     // Check for message when component mounts
     const message = localStorage.getItem('robotMessage');
@@ -156,7 +172,24 @@ export default {
     }
 
     // Add error handlers for both video streams
-    this.$refs.irFrame.onerror = () => this.handleImageError('ir');
+    if( this.showIrPanel){
+      this.$refs.irFrame.onerror = () => this.handleImageError('ir');
+    }
+
+    // 如果 WebSocket 未连接，重新连接
+    if (!webSocketService.stompClient || !webSocketService.stompClient.connected) {
+      webSocketService.connect();
+    }
+
+    // 添加消息处理器
+    this.messageHandler = (message) => {
+      console.log('Component received message:', message);
+      // 确保消息包含必要的字段
+      if (message && message.message) {
+        this.showPopupDialog(message);
+      }
+    };
+
     this.$refs.rgbFrame.onerror = () => this.handleImageError('rgb');
 
     // 如果 WebSocket 未连接，重新连接
@@ -182,6 +215,14 @@ export default {
   },
   methods: {
 
+    setupVideoStream() {
+      // 只有当元素存在时才设置属性
+      if (this.$refs.irFrame) {
+        this.showIrVideo = true;
+        // 其他视频流设置逻辑...
+      }
+    },
+
     async startRgbStream() {
       // this.showToast('视觉模块启动中...', 11000);
       // this.rgbRetryCount = 0; // Reset retry counter
@@ -195,40 +236,21 @@ export default {
       // }
       this.rgbStreamActive = true;
       this.rgbAutoReload = true;
-      this.rgbVideoSrc = apiConfig.getrgbVideoSrc()
+      if(this.robotId === 'R001'){
+        this.rgbVideoSrc = apiConfig.getrgbVideoSrc();
+      }
+      else if(this.robotId === 'R002'){
+        this.rgbVideoSrc = apiConfig.getrgbVideoSrc2();
+      }
+
+      // this.rgbVideoSrc = apiConfig.getrgbVideoSrc()
       console.log('RGB video source updated to:', apiConfig.getrgbVideoSrc());
     },
 
     async startIrStream() {
-      // this.showToast('红外模块启动中...', 5000);
-      // try {
-      //   const response = await fetch('/start_ir');
-      //   if (response.ok) {
-      //     console.log('IR stream started successfully');
-      //     setTimeout(() => {
-      //       this.irVideoSrc = `${this.baseUrl}:5001/video_feed_ir`;
-      //       console.log('IR video source updated to:', this.irVideoSrc);
-      //
-      //       // Add error handling for the IR video stream
-      //       const irImg = this.$refs.irFrame;
-      //       irImg.onerror = () => {
-      //         console.error('Failed to load IR stream');
-      //         this.irVideoSrc = '../static/img/vision_close.png';
-      //         alert('无法加载红外视频流');
-      //       };
-      //
-      //       irImg.onload = () => {
-      //         console.log('IR stream loaded successfully');
-      //       };
-      //     }, 5000);
-      //   } else {
-      //     throw new Error('Failed to start IR stream');
-      //   }
-      // } catch (error) {
-      //   console.error('Error starting IR stream:', error);
-      //   this.irVideoSrc = '../static/img/vision_close.png';
-      //   alert('启动红外视频流失败');
-      // }
+      
+      this.showIrVideo = true;
+
       this.irStreamActive = true;
       this.irAutoReload = true;
       this.irVideoSrc = apiConfig.getirVideoSrc();
@@ -252,19 +274,9 @@ export default {
     },
 
     async killIrProcess() {
-      // try {
-      //   const response = await fetch('/kill_ir_process', {method: 'POST'});
-      //   if (response.ok) {
-      //     console.log('IR process killed successfully');
-      //     alert("红外模块已停止！");
-      //     this.irVideoSrc = "../static/img/vision_close.png";
-      //   } else {
-      //     throw new Error('Failed to kill IR process');
-      //   }
-      // } catch (error) {
-      //   console.error('Error killing IR process:', error);
-      //   alert("Error: " + error);
-      // }
+      
+      this.showIrVideo = false;
+
       this.irStreamActive = false;
       this.irAutoReload = false;
       this.irVideoSrc = require("@/assets/no.png");
@@ -289,7 +301,8 @@ export default {
       try {
         const formData = {
           direction: direction,
-          speed: parseInt(this.moveSpeed) // Add speed to the request
+          speed: parseInt(this.moveSpeed), // Add speed to the request
+          robotId: this.robotId
         };
 
         const response = await fetch(apiConfig.getreceiveMoveUrl(), {
@@ -361,7 +374,7 @@ export default {
           console.log('Max retry attempts reached for RGB stream');
         }
       }
-      if (type === 'ir') {
+      if (type === 'ir' && this.$refs.irFrame) {
         if (this.irRetryCount < this.maxRetries) {
           this.irRetryCount++;
           console.log(`Retrying IR stream (attempt ${this.irRetryCount})`);
@@ -381,7 +394,8 @@ export default {
       if (type === 'rgb') {
         this.rgbRetryCount = 0; // Reset retry counter on successful load
         console.log('RGB stream loaded successfully');
-      }else {
+      }
+      if (type === 'ir' && this.$refs.irFrame) {
         this.irRetryCount = 0; // Reset retry counter on successful load
         console.log('IR stream loaded successfully');
       }

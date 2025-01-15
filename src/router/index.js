@@ -8,6 +8,8 @@ import TestImage from '@/components/TestImage.vue'
 import About from "@/components/About.vue";
 import newHello from "@/components/newHello.vue";
 import login from "@/components/login.vue";
+import test_HelloWorld  from "@/components/test_HelloWorld.vue";
+import test_receive from "@/components/test_receive.vue";
 
 const routes = [
   {
@@ -55,6 +57,16 @@ const routes = [
     name: 'login',
     component: login
   },
+  {
+    path: '/test_hello',
+    name: 'test_hello',
+    component: test_HelloWorld
+  },
+  {
+    path: '/test_receive',
+    name: 'test_receive',
+    component: test_receive
+  }
 ]
 
 const router = createRouter({

@@ -1,5 +1,6 @@
 const API_BASE_URL = process.env.VUE_APP_API_BASE_URL;
 const API_ROBOT_URL = process.env.VUE_APP_API_BASE_ROBOT_URL;
+const API_ROBOT2_URL = process.env.VUE_APP_API_BASE_ROBOT2_URL;
 export default {
   baseURL: API_BASE_URL,
   robotURL: API_ROBOT_URL,
@@ -35,5 +36,8 @@ export default {
   },
   getreceiveBatteryUrl() {
     return `${API_BASE_URL}/api/get_battery`;
+  },
+  getrgbVideoSrc2(){
+    return `${API_ROBOT2_URL}:5001/video_feed_rgb`;
   },
 };

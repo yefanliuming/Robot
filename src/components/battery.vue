@@ -1,6 +1,13 @@
 <script>
 import apiConfig from "@/config/api.config";
 export default {
+  props: {
+    robotId: {
+      type: String,
+      required: true
+    }
+  },
+
   data() {
     return {
       batteryLevel: 0,
@@ -23,11 +30,35 @@ export default {
   methods: {
 
     async getBatteryLevel() {
+
+      console.log('robotId:', this.robotId);
+
       try {
-        const response = await fetch(apiConfig.getreceiveBatteryUrl());
+
+        //测试代码
+
+        const formData = {
+          robotId: this.robotId,
+        };
+        const response = await fetch(apiConfig.getreceiveBatteryUrl(),{
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify(formData),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
         const data = await response.json();
         this.batteryLevel = data.x;
-        console.log('Battery level:', this.batteryLevel);
+        console.log('test Battery level:', this.batteryLevel);
+
+        //测试代码
+
+        
+        // const response = await fetch(apiConfig.getreceiveBatteryUrl());
+        // const data = await response.json();
+        // this.batteryLevel = data.x;
+        // console.log('Battery level:', this.batteryLevel);
       } catch (error) {
         console.error('Error fetching battery level:', error);
       }

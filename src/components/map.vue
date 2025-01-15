@@ -27,6 +27,14 @@
 <script>
 import apiConfig from '@/config/api.config';
 export default {
+
+  props: {
+    robotId: {
+      type: String,
+      required: true
+    }
+  },
+
   data() {
     return {
       imageUrl: apiConfig.getImageUrl(),
@@ -47,10 +55,33 @@ export default {
     },
 
     async fetchLocation() {
+
+
+
       try {
-        const response = await fetch(apiConfig.getLocationUrl());
+
+        //测试代码
+
+        const formData = {
+          robotId: this.robotId,
+        };
+        const response = await fetch(apiConfig.getLocationUrl(),{
+          method: 'POST',
+          credentials: 'include',
+          body: JSON.stringify(formData),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
         const data = await response.json();
         console.log(data.x, data.y)
+
+        //测试代码
+
+        // const response = await fetch(apiConfig.getLocationUrl());
+        // const data = await response.json();
+        // console.log(data.x, data.y)
+
         // Convert from the new coordinate system (0-6) to pixel positions
         const normalizedX = ((data.x + 0.4) / this.maxCoordinate); // Normalize to 0-1
         const normalizedY = ((data.y + 0.9)/ this.maxCoordinate); // Normalize to 0-1
