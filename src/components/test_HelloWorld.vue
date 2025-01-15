@@ -29,6 +29,9 @@
       <!-- 任务编辑按钮 -->
       <button class="task-edit-btn" @click="gototaskedit">任务编辑</button>
 
+      <!-- 添加查看执行任务按钮 -->
+      <check_robot :robot-id="robotId"/>
+
       <!-- 主表单容器 -->
       <div class="form-card">
         <form @submit.prevent="submitForm" class="form-container">
@@ -177,13 +180,21 @@
         </form>
       </div>
     </div>
+
+
   </div>
 </template>
 
 <script>
 import apiConfig from '@/config/api.config';
+import check_robot from '@/components/check_robot.vue';
+
 
 export default {
+
+  components: {
+    check_robot
+  },
   data() {
     return {
       actionType: '',
@@ -223,6 +234,7 @@ export default {
   },
 
   methods: {
+
     handleSwitchGroupChange() {
       // Reset switch number when group changes
       this.switchNumber = '';

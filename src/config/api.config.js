@@ -40,4 +40,5 @@ export default {
   getrgbVideoSrc2(){
     return `${API_ROBOT2_URL}:5001/video_feed_rgb`;
   },
+  getActiveRobotsUrl: () => `${API_BASE_URL}/api/activeRobots`,
 };

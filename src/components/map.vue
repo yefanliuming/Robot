@@ -83,18 +83,49 @@ export default {
         // console.log(data.x, data.y)
 
         // Convert from the new coordinate system (0-6) to pixel positions
-        const normalizedX = ((data.x + 0.4) / this.maxCoordinate); // Normalize to 0-1
-        const normalizedY = ((data.y + 0.9)/ this.maxCoordinate); // Normalize to 0-1
 
-        console.log(normalizedX,normalizedY)
+        //测试大车位置
 
-        // Convert to pixel coordinates with origin at bottom right
-        const pixelX = this.imageWidth * (1 - normalizedY); // Y axis becomes horizontal (from right to left)
-        const pixelY = this.imageHeight * (1 - normalizedX); // X axis becomes vertical (from bottom to top)
-        
-        this.labels = [
-          { text: 'L', x: pixelX, y: pixelY }
-        ];
+        if(this.robotId==="R001"){
+          const normalizedX = ((data.x + 0.4) / this.maxCoordinate); // Normalize to 0-1
+          const normalizedY = ((data.y + 0.9)/ this.maxCoordinate); // Normalize to 0-1
+          console.log(normalizedX,normalizedY)
+          // Convert to pixel coordinates with origin at bottom right
+          const pixelX = this.imageWidth * (1 - normalizedY); // Y axis becomes horizontal (from right to left)
+          const pixelY = this.imageHeight * (1 - normalizedX); // X axis becomes vertical (from bottom to top)
+
+          this.labels = [
+            { text: 'L', x: pixelX, y: pixelY }
+          ];
+        }
+        else if(this.robotId==="R002"){
+
+          // const normalizedX = ((data.x + 0.4) / this.maxCoordinate); // Normalize to 0-1
+          // const normalizedY = ((data.y + 0.9)/ this.maxCoordinate); // Normalize to 0-1
+          // console.log(normalizedX,normalizedY)
+          // // Convert to pixel coordinates with origin at bottom right
+          // const pixelX = this.imageWidth * (1 - normalizedY); // Y axis becomes horizontal (from right to left)
+          // const pixelY = this.imageHeight * (1 - normalizedX); // X axis becomes vertical (from bottom to top)
+          //
+          // this.labels = [
+          //   { text: 'L', x: pixelX, y: pixelY }
+          // ];
+
+          const normalizedX = ((data.y + 4.4) / this.maxCoordinate); // 使用y作为x
+          const normalizedY = ((data.x + 0.9)/ this.maxCoordinate); // 使用x作为y
+          const pixelX = this.imageWidth * (1 - normalizedY);
+          const pixelY = this.imageHeight * (normalizedX);
+
+          this.labels = [
+            { text: 'L', x: pixelX, y: pixelY }
+          ];
+        }
+
+        //
+
+
+
+
       } catch (error) {
         console.error('Error fetching location data:', error);
       }
