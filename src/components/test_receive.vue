@@ -403,11 +403,15 @@ export default {
 
     showPopupDialog(messageData) {
       this.$nextTick(() => {
-        this.popupMessage = messageData.message;
+        if (this.robotId === 'R001'){
+          this.popupMessage = messageData.message;
         this.currentMessageId = messageData.id;
         this.currentMessage = messageData;
         this.showPopup = true;
         console.log('Popup shown:', this.showPopup, 'Message:', this.popupMessage);
+        } else {
+        console.log('Popup suppressed for R002:', messageData);
+        }
       });
     },
 
