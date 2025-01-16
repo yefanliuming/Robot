@@ -16,7 +16,10 @@ class WebSocketService {
         this.connectionAttempts = 0;
         this.maxReconnectAttempts = 10;
         this.connect();
+
+
     }
+
 
 
 

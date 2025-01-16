@@ -366,11 +366,22 @@ export default {
           console.log(`Retrying RGB stream (attempt ${this.rgbRetryCount})`);
           setTimeout(() => {
             // Force reload by adding timestamp
-            this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
+            if(this.robotId === 'R001'){
+              this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
+            }
+            else{
+              this.rgbVideoSrc = `http://192.168.1.107:5001/video_feed_rgb?t=${Date.now()}`;
+            }
+
           }, this.retryInterval);
         } else {
           // this.rgbVideoSrc = '../static/img/vision_close.png';
-          this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
+          if(this.robotId === 'R001'){
+            this.rgbVideoSrc = `${this.baseUrl}:5001/video_feed_rgb?t=${Date.now()}`;
+          }
+          else{
+            this.rgbVideoSrc = `http://192.168.1.107:5001/video_feed_rgb?t=${Date.now()}`;
+          }
           console.log('Max retry attempts reached for RGB stream');
         }
       }
@@ -403,6 +414,13 @@ export default {
 
     showPopupDialog(messageData) {
       this.$nextTick(() => {
+
+        // this.popupMessage = messageData.message;
+        // this.currentMessageId = messageData.id;
+        // this.currentMessage = messageData;
+        // this.showPopup = true;
+        // console.log('Popup shown:', this.showPopup, 'Message:', this.popupMessage);
+
         if (this.robotId === 'R001'){
           this.popupMessage = messageData.message;
         this.currentMessageId = messageData.id;
@@ -420,7 +438,7 @@ export default {
       if (this.currentMessage && this.currentMessage.message === '任务完成！') {
         webSocketService.sendMessageResponse(this.currentMessage, true);
         // this.$router.push('/'); // Navigate to home page
-        this.$router.push('/op');
+        this.$router.push('/test_hello');
       }
       else if(this.currentMessage && this.currentMessage.message === '本轮操作成功!'){
         webSocketService.sendMessageResponse(this.currentMessage, true);
